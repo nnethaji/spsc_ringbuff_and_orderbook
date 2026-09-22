@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [{
+    "label": "build and run",
+    "type": "shell",
+    "command": "clang++ -std=c++23 -Wall -Wextra -g -fsanitize=thread \"${file}\" -o /tmp/a.out && /tmp/a.out",
+    "group": { "kind": "build", "isDefault": true },
+    "presentation": { "clear": true }
+  }]
+}
