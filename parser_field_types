@@ -1,0 +1,25 @@
+rough idea for parser 
+
+32 byte parser 
+(why 32? design choice + self imposed constraint)
+
+fields:
+
+Decreasing alignment (struct)
+
+offset	      field	         type	     size
+0	        sequence_no 	 uint64_t	   8
+8	        timestamp_ns	 uint64_t	   8
+16	           price	     int64_t	   8
+24	          quantity	     uint32_t	   4
+28	           SYMBOL 	     uint16_t	   2
+30	           buy/sell	     char	       1
+31	           msg_type	     uint8_t	   1
+
+SYMBOL - ["APP", "MIC",...] - map these to a set of long long 
+(uint64_t)
+
+price is an int cause floating point is not fixed point.
+To preserve precision
+
+
