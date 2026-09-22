@@ -57,3 +57,20 @@ void generate(const char* path, int n){
     }
     
 }
+
+
+void parse(const char* path){
+    std::ifstream in(path, std::ios::binary);
+    msg receiver;
+
+    while(in.read( reinterpret_cast<char*>(&receiver), sizeof(receiver))){
+        receiver.sequence_no = std::byteswap(receiver.sequence_no);
+        receiver.timestamp_ns = std::byteswap(receiver.timestamp_ns);
+        receiver.price = std::byteswap(receiver.price);
+        receiver.quantity = std::byteswap(receiver.quantity);
+        receiver.symbol_id = std::byteswap(receiver.symbol_id);
+        
+    }
+
+}
+
