@@ -1,37 +1,16 @@
-#include <cstdint>
+#include "spsc.hpp"
+#include <bit>
 #include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <ios>
-#include <bit>
-// offset	      field	         type	     size
-// 0	        sequence_no 	 uint64_t	   8
-// 8	        timestamp_ns	 uint64_t	   8
-// 16	           price	     int64_t	   8
-// 24	          quantity	     uint32_t	   4
-// 28	           SYMBOL 	     uint16_t	   2
-// 30	           buy/sell	     char	       1
-// 31	           msg_type	     uint8_t	   1
-
-
-struct msg {
-    uint64_t sequence_no;
-    uint64_t timestamp_ns;
-    int64_t price;
-    uint32_t quantity;
-    uint16_t symbol_id;
-    char buy_sell;
-    uint8_t msg_type;
-};
-
-static_assert(sizeof(msg) == 32, "msg is not 32 bytes");
 
 void generate(const char* path, int n){
 
     std::ofstream out(path,std::ios::binary);
     for(int i = 0; i<n ; i++){
         
-        msg m;
+        msg m{};
         m.sequence_no = i+1;
         m.sequence_no = std::byteswap(m.sequence_no);
 
@@ -71,6 +50,7 @@ void parse(const char* path){
         receiver.symbol_id = std::byteswap(receiver.symbol_id);
         
     }
+
 
 }
 
