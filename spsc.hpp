@@ -6,6 +6,8 @@
 #include <mutex>
 #include <stdio.h>
 #include <sys/wait.h>
+#include <bit>
+#include <fstream>
 
 
 // offset	      field	         type	     size
@@ -31,8 +33,6 @@ struct msg {
 static_assert(sizeof(msg) == 32, "msg is not 32 bytes");
 
 
-void generate(const char* path, int n);
-void parse(const char* path);
 
 
 template <typename T, size_t N>
@@ -47,7 +47,9 @@ class SPSCQueue {
     bool finished_production{false};  // flag to finally tell the consumer that the producer is done
 
 
+
 public:
+    
     void push(T value){   
         std::unique_lock<std::mutex> lk(m);
         // producer gets lock
@@ -106,4 +108,26 @@ public:
     }
 };
 
+template <size_t  N>
+void parse(const char* path, SPSCQueue <msg, N>& spscq){
+    std::ifstream in(path, std::ios::binary);
+    msg receiver;
 
+    while(in.read( reinterpret_cast<char*>(&receiver), sizeof(receiver))){
+        receiver.sequence_no = std::byteswap(receiver.sequence_no);
+        receiver.timestamp_ns = std::byteswap(receiver.timestamp_ns);
+        receiver.price = std::byteswap(receiver.price);
+        receiver.quantity = std::byteswap(receiver.quantity);
+        receiver.symbol_id = std::byteswap(receiver.symbol_id);
+        
+        //produces
+        spscq.push(receiver);
+        
+    }
+   
+    // producer calls shutdown
+    spscq.shutdown();
+    
+}
+
+void generate(const char* path, int n);
