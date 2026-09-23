@@ -5,7 +5,9 @@
 #include <array>
 #include <cstdint>
 #include <sys/wait.h>
-
+#include <thread>
+#include <vector>
+#include <iostream>
 template <typename T, size_t N>
 class SPSCQueue {
     std::array<T, N> ring_buff;
@@ -62,3 +64,34 @@ public:
 
 
 
+int main(){
+    SPSCQueue<int, 8> lock_udaya_buffer;
+    std::vector<std::thread> threads;
+    
+    threads.emplace_back([&](){
+        for(int i=0; i<1000; i++){
+            lock_udaya_buffer.push(i);
+        }
+    });
+    
+    
+    threads.emplace_back([&]() {
+        for(int i=0; i<1000; i++){
+            int x;
+            lock_udaya_buffer.pop(x);
+            if(x != i){
+                std::cerr<< "out of order";
+            }
+        }
+    });
+    
+
+    for(auto& th:threads){
+        if(th.joinable()){
+            th.join();
+        }
+    }
+    std::cout<<"WORKS";
+
+    return 0;
+}
