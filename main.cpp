@@ -1,4 +1,4 @@
-#include "spsc.hpp"
+#include "spsc_lockfree.hpp"
 #include <cstdint>
 #include <iostream>
 #include <thread>
@@ -18,8 +18,15 @@ int main(){
 
     std::thread consumer([&]{ 
         msg m; 
-        while (lock_buffer.pop(m)) 
-            ++count; 
+        // while (lock_buffer.pop(m)) 
+        //     ++count; 
+        while (!lock_buffer.done()) {
+            if (lock_buffer.pop(m)) {
+                //process(m);
+                count++;
+            }
+        
+        }
     });
     
     // threads.emplace_back([&]() {
