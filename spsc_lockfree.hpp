@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <bit>
 #include <fstream>
+#include <new>
 
 
 // offset	      field	         type	     size
@@ -50,8 +51,10 @@ class SPSCQueue {
     std::array<T, N> ring_buff;
     static_assert((N & (N - 1)) == 0 ,"N should be a power of 2");
     
-    std::atomic<size_t> head{0};  
-    std::atomic<size_t> tail{0}; 
+    // use alignas to pad and start head and tail in diff cache lines 
+    // group head and finished_production together (both written by P)
+    alignas(std::hardware_destructive_interference_size )std::atomic<size_t> tail{0}; 
+    alignas(std::hardware_destructive_interference_size) std::atomic<size_t> head{0};  
     std::atomic <bool> finished_production{false};  // flag to finally tell the consumer that the producer is done
     // atomic otherwise not just timing miss 
     // but undefined behaviour - compiler might take the bool out of a while loop 
