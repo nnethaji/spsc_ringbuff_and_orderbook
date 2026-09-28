@@ -61,3 +61,14 @@ we can use std::hardware_destructive_interference_size
 to make sure head and tail start on differnet cache lines 
 
 
+❯ clang++ -std=c++23 -g -O2 main.cpp generator.cpp -o main && ./main
+WORKS count=10000
+50p 125ns
+99p 2958ns
+99.9p 3875ns
+
+❯ clang++ -std=c++23 -g -O2 main.cpp generator.cpp -o main && ./main
+WORKS count=10000
+50p 83ns
+99p 1542ns
+99.9p 2209ns

@@ -51,9 +51,10 @@ The producer stamps each message with `std::chrono::steady_clock` just before pu
 
 These are handoff latencies: 10,000 messages, capacity 1,024, `clang++ -O2`, Apple M4 (MacBook Air), macOS. Each figure is the **median of 20 runs**.
 
-| p50     | p99    | p99.9  |
-|--------:|-------:|-------:|
-| ~167 ns | ~7.1 µs | ~8.1 µs |
+| queue | p50 | p99 | p99.9 |
+|---|---:|---:|---:|
+| lock-free SPSC | **167 ns** | **250 ns** | 6.1 µs |
+| mutex + condvar | 1.5 µs | 8.2 µs | 18.5 µs |
 
 
 
