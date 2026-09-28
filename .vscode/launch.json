@@ -15,3 +15,7 @@
     ],
     "version": "2.0.0"
 }
+
+// ❯ clang++ -std=c++23 -g -fsanitize=thread main.cpp generator.cpp -o main && ./main
+// ❯ clang++ -std=c++23 -g -O0 main.cpp generator.cpp -o main && ./main
+// ❯ clang++ -std=c++23 -g -O2 main.cpp generator.cpp -o main && ./main
