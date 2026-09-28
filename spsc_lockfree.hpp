@@ -4,6 +4,7 @@
 
 #include <array>
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstddef>
 #include <cstdint>
@@ -37,7 +38,11 @@ struct msg {
 
 static_assert(sizeof(msg) == 32, "msg is not 32 bytes");
 
-
+// struct with timestamp for latency measure
+struct Latency_measured_buffer {
+    msg m; 
+    std::chrono::steady_clock::time_point time_latency_stamp;
+};
 
 
 template <typename T, size_t N>
@@ -135,10 +140,11 @@ public:
 };
 
 template <size_t  N>
-void parse(const char* path, SPSCQueue <msg, N>& spscq){
+void parse(const char* path, SPSCQueue <Latency_measured_buffer, N>& spscq){
     std::ifstream in(path, std::ios::binary);
-    msg receiver;
-
+    // msg receiver;
+    Latency_measured_buffer receiver_and_stamp;  
+    msg& receiver = receiver_and_stamp.m;
     while(in.read( reinterpret_cast<char*>(&receiver), sizeof(receiver))){
         receiver.sequence_no = std::byteswap(receiver.sequence_no);
         receiver.timestamp_ns = std::byteswap(receiver.timestamp_ns);
@@ -146,10 +152,14 @@ void parse(const char* path, SPSCQueue <msg, N>& spscq){
         receiver.quantity = std::byteswap(receiver.quantity);
         receiver.symbol_id = std::byteswap(receiver.symbol_id);
         
+
+        // make stamp before you push
+        receiver_and_stamp.time_latency_stamp = std::chrono::steady_clock::now();
         //produces 
         //spin if buffer is full and consumer hasnt consumed yet 
-        while(!spscq.push(receiver)){
+        while(!spscq.push(receiver_and_stamp)){
                     // is essentially waiting for consumer to consume
+
         }
         
     }
