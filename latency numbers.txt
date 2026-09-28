@@ -1,0 +1,63 @@
+// mutex only no lock free numbers 
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+// under different optimizations O0 and O2
+// O0 is much higher cause compiler doesnt inline template func (producer functions like ifstream don't inline)
+// but inlining prevents time latency from function calls in consumer (which has a lot of template code that can be otpimized )
+❯ clang++ -std=c++23 -g -O0 main.cpp generator.cpp -o main && ./main
+
+// making producer spin until consumer also stops eliminates lag from queuing latency 
+// that happens cause P starts first, fills the queue up, the first n elements P filled having to be consumed 
+// before P can write elements again 
+
+WORKS count=10000
+50p 283708ns
+99p 307625ns
+99.9p 308333ns
+
+❯ clang++ -std=c++23 -g -O2 main.cpp generator.cpp -o main && ./main
+WORKS count=10000
+167ns
+4209ns
+4792ns
+
+❯ clang++ -std=c++23 -g -O2 main.cpp generator.cpp -o main && ./main
+WORKS count=10000
+50p125ns
+99p 2708ns
+99.9p 3833ns
+
+❯ clang++ -std=c++23 -g -O2 main.cpp generator.cpp -o main && ./main
+WORKS count=10000
+50p 125ns
+99p 3250ns
+99.9p 3625ns
+
+❯ clang++ -std=c++23 -g -O1 main.cpp generator.cpp -o main && ./main
+WORKS count=10000
+50p 125ns
+99p 4541ns
+99.9p 5083ns
+
+------------------------------------------------------------------------------------------------------------------------------------------
+CACHE CONTENTION
+The cache line is juggled between cores, and each transfer costs 10 to 100 ns. 
+Only one core can own the line at a time, 
+so under contention the "parallel" CASes run one after another, plus the transfer costs
+
+Even with CAS, if head and tail and production_done all are declared next to each other
+the cache would have to be passed between P and C
+
+to avoid this, we can group variables such that var P writes are sitting on cache line together (head, production_done)
+and C on another cache line 
+
+we can use std::hardware_destructive_interference_size
+to make sure head and tail start on differnet cache lines 
+
+
